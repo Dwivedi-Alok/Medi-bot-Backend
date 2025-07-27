@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import logging
 from datetime import datetime
 import traceback
+import re
 
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
@@ -17,7 +18,7 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS for React frontend
+CORS(app)  # Enable CORS for React frontend (all origins, for dev)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -117,8 +118,6 @@ def highlight_medical_terms(text):
     
     highlighted_text = text
     for term in medical_terms:
-        # Case-insensitive replacement while preserving original case
-        import re
         pattern = re.compile(re.escape(term), re.IGNORECASE)
         highlighted_text = pattern.sub(lambda m: f"**{m.group()}**", highlighted_text)
     
@@ -151,41 +150,33 @@ def chat():
                 "error": "Message cannot be empty."
             }), 400
         
-        # Log the incoming request
         logger.info(f"Received query: {user_message[:100]}...")
         
-        # Check if services are initialized
         if not vectorstore or not qa_chain:
             return jsonify({
                 "error": "Medical knowledge base is not available. Please try again later."
             }), 503
         
-        # Process the query
         response = qa_chain.invoke({'query': user_message})
         result = response.get("result", "")
         source_documents = response.get("source_documents", [])
         
-        # Enhance the response
         enhanced_result = highlight_medical_terms(result)
         
-        # Add medical disclaimer
         enhanced_result += "\n\n---\n⚠️ **Medical Disclaimer:** This information is for educational purposes only. Always consult with qualified healthcare professionals for medical advice, diagnosis, or treatment."
         
-        # Process source documents
         sources = []
-        for i, doc in enumerate(source_documents[:3], 1):  # Limit to top 3 sources
+        for i, doc in enumerate(source_documents[:3], 1):
             page_info = doc.metadata.get('page_label', doc.metadata.get('page', 'N/A'))
             content_preview = doc.page_content.strip()[:200]
             if len(doc.page_content) > 200:
                 content_preview += "..."
-            
             sources.append({
                 "id": i,
                 "page": page_info,
                 "content": content_preview
             })
         
-        # Prepare response
         response_data = {
             "response": enhanced_result,
             "sources": sources,
@@ -199,7 +190,6 @@ def chat():
     except Exception as e:
         logger.error(f"Error processing chat request: {str(e)}")
         logger.error(traceback.format_exc())
-        
         return jsonify({
             "error": "I'm experiencing technical difficulties. Please try again in a moment.",
             "timestamp": datetime.now().isoformat()
@@ -207,7 +197,6 @@ def chat():
 
 @app.route('/api/suggestions', methods=['GET'])
 def get_suggestions():
-    """Get suggested questions for users."""
     suggestions = [
         "What are the symptoms of dehydration?",
         "Tell me about blood pressure medications",
@@ -218,7 +207,6 @@ def get_suggestions():
         "How to manage fever in adults?",
         "What are the signs of a heart attack?"
     ]
-    
     return jsonify({
         "suggestions": suggestions,
         "timestamp": datetime.now().isoformat()
@@ -226,7 +214,6 @@ def get_suggestions():
 
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
-    """Get system statistics."""
     return jsonify({
         "system_status": "operational",
         "vectorstore_loaded": vectorstore is not None,
@@ -258,7 +245,6 @@ if __name__ == '__main__':
     print("🩺 MediBot API Server Starting...")
     print("=" * 50)
     
-    # Initialize services
     print("📚 Loading medical knowledge base...")
     if not initialize_vectorstore():
         print("❌ Failed to load vector store. Exiting.")
@@ -273,7 +259,6 @@ if __name__ == '__main__':
     print("🚀 Starting Flask server...")
     print("=" * 50)
     
-    # Run the Flask app
     app.run(
         host='0.0.0.0',
         port=int(os.getenv('PORT', 5000)),
