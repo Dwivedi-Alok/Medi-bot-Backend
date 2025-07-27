@@ -4,9 +4,9 @@ flask-cors
 python-dotenv
 
 # LangChain core + integrations
-langchain>=0.1.0
-langchain-community>=0.0.22
+langchain>=0.3.20
 langchain-core>=0.3.68
+langchain-community>=0.0.22
 langchain-text-splitters>=0.3.8
 langchain-huggingface
 langchain-groq
@@ -24,7 +24,7 @@ transformers
 
 # Utility
 tqdm
-pydantic>=1.10.0,<2.0.0
+pydantic>=2.7.4
 requests
 typing-extensions
 
