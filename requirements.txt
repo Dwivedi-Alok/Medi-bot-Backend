@@ -1,32 +1,35 @@
-# Flask + API
+# Flask app and server
 flask
 flask-cors
 python-dotenv
 
-# LangChain core + integrations
-langchain>=0.3.20
-langchain-core>=0.3.68
+# LangChain + Integrations
+langchain>=0.1.0
 langchain-community>=0.0.22
+langchain-core>=0.3.68
 langchain-text-splitters>=0.3.8
-langchain-huggingface
 langchain-groq
+langchain-huggingface
 
-# Vector store
+# Embeddings + Models
+huggingface-hub
+sentence-transformers>=2.2.2
+transformers
+accelerate  # Sometimes required for HF inference
+
+# Vector DB
 faiss-cpu==1.11.0
 
 # PDF Parsing
 pypdf
-
-# HuggingFace models + embeddings
-sentence-transformers>=5.0.0
-huggingface-hub
-transformers
+pdfminer.six  # May be required by loaders
 
 # Utility
 tqdm
-pydantic>=2.7.4
+pydantic>=1.10.0,<2.0.0
 requests
 typing-extensions
+setuptools>=65.5.0
 
-# Logging, errors, dates
-setuptools
+# Gunicorn (for production WSGI server on Render)
+gunicorn
