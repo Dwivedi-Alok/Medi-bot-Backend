@@ -241,24 +241,27 @@ def internal_error(error):
         "message": "Please try again later"
     }), 500
 
+# --- Initialization for all environments (local and Render) ---
+print("🩺 MediBot API Server Starting...")
+print("=" * 50)
+
+print("📚 Loading medical knowledge base...")
+if not initialize_vectorstore():
+    print("❌ Failed to load vector store. Exiting.")
+    exit(1)
+
+print("🧠 Initializing AI model...")
+if not initialize_qa_chain():
+    print("❌ Failed to initialize QA chain. Exiting.")
+    exit(1)
+
+print("✅ All services initialized successfully!")
+print("=" * 50)
+# -------------------------------------------------------------
+
 if __name__ == '__main__':
-    print("🩺 MediBot API Server Starting...")
-    print("=" * 50)
-    
-    print("📚 Loading medical knowledge base...")
-    if not initialize_vectorstore():
-        print("❌ Failed to load vector store. Exiting.")
-        exit(1)
-    
-    print("🧠 Initializing AI model...")
-    if not initialize_qa_chain():
-        print("❌ Failed to initialize QA chain. Exiting.")
-        exit(1)
-    
-    print("✅ All services initialized successfully!")
     print("🚀 Starting Flask server...")
     print("=" * 50)
-    
     app.run(
         host='0.0.0.0',
         port=int(os.getenv('PORT', 5000)),
